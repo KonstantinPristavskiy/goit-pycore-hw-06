@@ -1,6 +1,8 @@
 from collections import UserDict
 
 class Field:
+    """Базовий клас для полів запису."""
+    
     def __init__(self, value):
         self.value = value
 
@@ -8,11 +10,15 @@ class Field:
         return str(self.value)
 
 class Name(Field):
-    # реалізація класу
-		pass
+    """Клас для зберігання імені контакту. Обов'язкове поле."""
+    pass
 
 class Phone(Field):
+    """Клас для зберігання номера телефону. Має валідацію формату (10 цифр)."""
+    
     def __init__(self, phone_number):
+        
+        """перевіряє що був переданий String який складається з 10 цифр"""
         if isinstance(phone_number, str) and phone_number.isdigit() and len(phone_number) == 10:
             super().__init__(phone_number)
         else:
@@ -20,11 +26,12 @@ class Phone(Field):
         
 
 class Record:
+    """Клас для зберігання інформації про контакт, включаючи ім'я та список телефонів."""
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
 
-    def add_phone(self, phone_raw):
+    def add_phone(self, phone_raw: str) -> None:
         """
         Створює обʼєкт класу Phone та 
         додає номер телефону в список self.phones
@@ -39,25 +46,48 @@ class Record:
                 return p
         return None
 
-    def remove_phone(self, phone_to_delete):
-        phone_obj = self.find_phone(phone_to_delete)
-        if phone_obj:
-            self.phones.remove(phone_obj)
+    def remove_phone(self, phone_to_delete: str) -> bool:
+        """Видаляє телефон; повертає True, якщо знайшов і видалив."""
+        for index, phone in enumerate(self.phones):
+            if phone.value == phone_to_delete:
+                self.phones.pop(index)
+                return True
+        return False
 
                 
 
-    def edit_phone(self, old_phone, new_phone):
+    def edit_phone(self, old_phone: str, new_phone: str) -> bool:
+        """
+        Замінює об’єкт Phone(old_phone) на Phone(new_phone);
+        повертає True, якщо заміна відбулася, False інакше.
+        """
         for index, phone in enumerate(self.phones):
             if phone.value == old_phone:
                 self.phones[index] = Phone(new_phone)
-    
+                return True
+        return False
     
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
 
 class AddressBook(UserDict):
-    # реалізація класу
-		pass
+    def add_record(self, record: Record) -> None:
+        """Додає Record у словник під ключем імені контакту."""
+        self.data[record.name.value] = record
+
+    def find(self, name: str) -> Record | None:
+        """Повертає Record за точним ім’ям або None, якщо не знайдено."""
+        return self.data.get(name)
+        
+    def delete(self, name: str) -> bool:
+        """
+        Видаляє Record за ім’ям.
+        Повертає True, якщо контакт був, і False, якщо не було такого ключа.
+        """
+        if name in self.data:
+            del self.data[name]
+            return True
+        return False
 
 
 
